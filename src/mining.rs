@@ -1,4 +1,8 @@
+use super::constants::DIFFICULTY_PREFIX;
+use log::{error, info, warn};
 pub mod blocks {
+    use crate::constants;
+
     pub fn mine_block(
         id: u64,
         timestamp: i64,
@@ -17,7 +21,7 @@ pub mod blocks {
             let hash = calculate_hash(id, timestamp, previous_hash, data, nonce);
             let binary_hash = hash_to_binary_representation(&hash);
 
-            if binary_hash.starts_with(DIFFICULTY_PREFIX) {
+            if binary_hash.starts_with(constantsts.DIFFICUL) {
                 info!(
                     "mined! nonce: {}, hash: {}, binary_hash: {}",
                     nonce, hash, binary_hash

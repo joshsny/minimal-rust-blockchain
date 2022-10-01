@@ -1,3 +1,4 @@
+mod constants;
 mod mining;
 use chrono::prelude::*;
 use libp2p::{
@@ -12,7 +13,7 @@ use libp2p::{
 use log::{error, info, warn};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::time::Duration;
+use std::{sync::Arc, time::Duration};
 use tokio::{
     io::{stdin, AsyncBufReadExt, BufReader},
     select, spawn,
@@ -29,8 +30,6 @@ fn main() {
 pub struct App {
     pub blocks: Vec<Block>,
 }
-
-const DIFFICULTY_PREFIX: &str = "00";
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Block {
@@ -80,14 +79,14 @@ impl App {
         } else if !hash_to_binary_representation(
             &hex::decode(&block.hash).expect("can decode from hex"),
         )
-        .starts_with(DIFFICULTY_PREFIX)
+        .starts_with(constants::DIFFICULTY_PREFIX)
         {
             warn!("block with id: {}, has invalid difficulty", block.id);
             return false;
         } else if (block.id != previous_block.id + 1) {
             warn!("block with id: {}, has invalid id", block.id);
             return false;
-        } else if hex::encode(blocks::calculate_hash(
+        } else if hex::encode(calculate_hash(
             block.id,
             block.timestamp,
             &block.previous_hash,
@@ -118,7 +117,7 @@ impl App {
         true
     }
 
-    fn choose_chain(&self, local: [Block], remote: [Block]) -> [Block] {
+    fn choose_chain(&self, local: Vec<Block>, remote: Vec<Block>) -> Vec<Block> {
         let local_chain_valid = self.is_chain_valid(&local);
         let remote_chain_valid = self.is_chain_valid(&remote);
 
